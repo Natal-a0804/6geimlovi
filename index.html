@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Поймай гласную — игра с папильоном Яшей, подготовка к школе</title>
+<meta name="description" content="Бесплатная игра для детей 5–7 лет: лови падающие гласные буквы вместе с папильоном Яшей. Три этапа с усложнением.">
+<style>
+  :root { --bg:#EAF6EE; --green:#2E7D32; --line:#C8E6C9; --vowel:#d32f2f; --cons:#1e5fa8; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body { font-family:"Segoe UI",Arial,sans-serif; background:var(--bg); color:var(--green);
+         overflow:hidden; user-select:none; -webkit-user-select:none; }
+  .screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+            justify-content:center; gap:8px; padding:12px; text-align:center; }
+  .screen.on { display:flex; }
+  .card { background:#F1F8EE; border:2px solid var(--line); border-radius:22px; padding:16px 14px;
+          max-width:560px; width:94vw; box-shadow:0 4px 14px rgba(0,0,0,.05); }
+  h1 { font-size:clamp(24px,6vw,40px); color:var(--green); margin:4px 0; }
+  h2 { font-size:clamp(20px,5vw,32px); color:var(--green); margin:4px 0; }
+  .sub { font-size:clamp(15px,3.6vw,21px); color:var(--green); margin-bottom:8px; }
+  .dialog { display:flex; gap:10px; align-items:center; background:#E8F5E9; border:2px solid var(--line);
+            border-radius:16px; padding:10px 12px; margin:6px 0; text-align:left; }
+  .avatar { width:74px; height:74px; border-radius:50%; object-fit:cover; border:3px solid #A5D6A7; flex-shrink:0; }
+  .speech { font-size:clamp(15px,3.6vw,19px); line-height:1.4; color:#1a1a1a; }
+  .heroes3 { display:flex; justify-content:center; gap:8px; margin:6px 0; }
+  .heroes3 img { width:66px; height:66px; border-radius:50%; border:3px solid #A5D6A7; object-fit:cover; }
+  button { margin:5px; padding:13px 24px; font-size:clamp(17px,4vw,22px); font-weight:700;
+           border:2px solid var(--green); border-radius:16px; background:#fff; color:var(--green);
+           cursor:pointer; min-height:54px; touch-action:manipulation; }
+  button:active { transform:scale(.96); }
+  /* игровое поле */
+  .field { position:relative; width:min(92vw,520px); height:58vh; background:#E8F5E9;
+           border:3px solid var(--line); border-radius:18px; overflow:hidden; margin:4px auto; }
+  .lt { position:absolute; top:-70px; width:64px; height:64px; border-radius:14px; background:#fff;
+        border:3px solid var(--line); display:flex; align-items:center; justify-content:center;
+        font-size:40px; font-weight:900; cursor:pointer; transition:background .15s; }
+  .lt.v { color:var(--vowel); }
+  .lt.c { color:var(--cons); }
+  .lt.plain { color:#1a1a1a; }
+  .lt.caught { background:#C8E6C9; border-color:var(--green); }
+  .topline { display:flex; justify-content:space-between; width:min(92vw,520px);
+             font-size:clamp(15px,3.8vw,20px); font-weight:700; }
+  .stars { font-size:clamp(40px,9vw,64px); letter-spacing:6px; }
+  video.star { width:min(440px,82vw); max-height:32vh; border-radius:14px; background:#000; }
+  .mom { background:#E8F5E9; border:2px solid var(--line); border-radius:14px; padding:10px 14px;
+         font-size:clamp(14px,3.4vw,18px); color:#1a1a1a; max-width:520px; }
+  .mom b { color:var(--green); }
+</style>
+</head>
+<body>
+
+<div class="screen on" id="s0">
+  <div class="card">
+    <video src="video/logo_yasha.mp4" poster="images/poster_logo.jpg" autoplay muted loop playsinline
+           style="width:min(50vw,240px);border-radius:18px;border:3px solid #fff;box-shadow:0 6px 20px rgba(0,0,0,.12)"></video>
+    <h1>🎯 Поймай гласную!</h1>
+    <div class="sub">Игра с папильоном Яшей · три этапа с усложнением</div>
+    <div class="heroes3"><img src="images/yasha.jpg" alt="Яша"><img src="images/natasha.jpg" alt="Наташа"><img src="images/balovashka.jpg" alt="Баловашка"></div>
+    <button id="bGo">▶ Играть!</button>
+  </div>
+</div>
+
+<div class="screen" id="s1">
+  <div class="card">
+    <div class="dialog"><img class="avatar" src="images/yasha.jpg" alt="Яша">
+      <div class="speech">Яша: «Привет, дружочек! Я — папильон Яша! Давай поиграем с буквами?»</div></div>
+    <div class="sub">Гласные — красные, согласные — синие</div>
+    <div class="heroes3"><img src="images/balovashka.jpg" alt="Баловашка"><img src="images/natasha.jpg" alt="Наташа"></div>
+    <div class="dialog"><img class="avatar" src="images/natasha.jpg" alt="Наташа">
+      <div class="speech">Наташа: «Баловашка разбросал буквы! Помоги Яше поймать гласные!»</div></div>
+    <button id="bStart">Поехали! 🚀</button>
+  </div>
+</div>
+
+<div class="screen" id="s2">
+  <div class="topline"><span id="lblEtap">Этап 1 из 3</span><span id="lblScore">Поймано: 0 / 8</span></div>
+  <div class="field" id="field"></div>
+  <div class="sub" id="hint" style="min-height:28px">Лови красные буквы!</div>
+</div>
+
+<div class="screen" id="s3">
+  <div class="card">
+    <h2 id="etapTitle">Этап пройден!</h2>
+    <div class="stars">⭐⭐⭐</div>
+    <div class="sub" id="etapSub"></div>
+    <button id="bNext">Дальше ➡</button>
+  </div>
+</div>
+
+<div class="screen" id="s4">
+  <div class="card">
+    <div class="stars">🏆</div>
+    <h2>Миссия выполнена!</h2>
+    <video class="star" id="vidStar" src="video/zvezdochka.mp4" poster="images/poster_zvezdochka.jpg" playsinline preload="metadata" onended="document.getElementById('bAgain').style.display='inline-block'" onerror="document.getElementById('bAgain').style.display='inline-block'"></video>
+    <button id="bWatch">▶ Посмотреть: звёздочка!</button>
+    <div class="mom"><b>Маме 💛</b><br>Напишите гласные на листочках и попросите малыша хлопнуть, когда услышит «поющую» букву. Похвалите за старание!</div>
+    <button id="bAgain" style="display:none">Сыграть ещё раз</button>
+  </div>
+</div>
+
+<script>
+/* ===== звук ===== */
+var cache = {};
+function sfx(name){
+  var a = cache[name] || (cache[name] = new Audio('sounds/' + name + '.mp3'));
+  try { a.currentTime = 0; var p = a.play(); if (p && p.catch) p.catch(function(){}); } catch(e) {}
+  return a;
+}
+function stopAll(){ for (var k in cache){ try { cache[k].pause(); } catch(e){} } }
+var PRAISE = ['v03','v04','v05'], lastPraise = -1;
+function praise(){ var i = Math.floor(Math.random()*PRAISE.length); if (i===lastPraise) i=(i+1)%PRAISE.length; lastPraise=i; sfx(PRAISE[i]); }
+var OOPS = ['v07','v08','v09'], lastOops = -1;
+function oops(){ var i = Math.floor(Math.random()*OOPS.length); if (i===lastOops) i=(i+1)%OOPS.length; lastOops=i; sfx(OOPS[i]); }
+
+/* ===== буквы ===== */
+var VOW = ['А','О','У','И','Е','Ы'];
+var CON = ['М','Р','К','Т','Н','Л','П','Б'];
+var STAGES = [ {speed:1300, need:8, colored:true}, {speed:1000, need:8, colored:false}, {speed:760, need:8, colored:false} ];
+var stage = 0, caught = 0, missed = 0, anim = null, lastSpawn = 0, letters = [], running = false;
+
+function show(id){
+  stopAll();
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+}
+
+function startStage(){
+  caught = 0; running = true;
+  letters = [];
+  document.getElementById('field').innerHTML = '';
+  document.getElementById('lblEtap').textContent = 'Этап ' + (stage+1) + ' из 3';
+  document.getElementById('lblScore').textContent = 'Поймано: 0 / ' + STAGES[stage].need;
+  document.getElementById('hint').textContent = STAGES[stage].colored ? 'Лови красные буквы!' : 'Теперь все буквы одного цвета — думай сам!';
+  show('s2');
+  if (stage === 0) sfx('v02');
+  lastSpawn = performance.now() - STAGES[stage].speed + 500;
+  cancelAnimationFrame(anim);
+  anim = requestAnimationFrame(tick);
+}
+
+function tick(now){
+  if (!running) return;
+  var st = STAGES[stage];
+  if (now - lastSpawn > st.speed){
+    lastSpawn = now;
+    spawn();
+  }
+  var field = document.getElementById('field');
+  var H = field.clientHeight;
+  var dead = [];
+  for (var i = 0; i < letters.length; i++){
+    var L = letters[i];
+    L.y += L.vy;
+    L.el.style.top = L.y + 'px';
+    if (L.y > H + 40){
+      dead.push(i);
+      if (L.vowel){ missed++; sfx('v10'); }
+    }
+  }
+  for (var j = dead.length - 1; j >= 0; j--){
+    var d = letters.splice(dead[j], 1)[0];
+    if (d.el.parentNode) d.el.parentNode.removeChild(d.el);
+  }
+  anim = requestAnimationFrame(tick);
+}
+
+function spawn(){
+  var st = STAGES[stage];
+  var vowel = Math.random() < 0.55; /* гласных чуть больше — детям не скучно */
+  var ch = vowel ? VOW[Math.floor(Math.random()*VOW.length)] : CON[Math.floor(Math.random()*CON.length)];
+  var el = document.createElement('div');
+  el.className = 'lt' + (st.colored ? (vowel ? ' v' : ' c') : ' plain');
+  el.textContent = ch;
+  var fw = document.getElementById('field').clientWidth;
+  var x = 10 + Math.random() * Math.max(30, fw - 74 - 20);
+  el.style.left = x + 'px';
+  el.dataset.vowel = vowel ? '1' : '0';
+  el.addEventListener('pointerdown', function(e){ e.preventDefault(); catchLt(el, vowel, ch); });
+  document.getElementById('field').appendChild(el);
+  letters.push({ el: el, y: -70, vy: 1.15 + stage * 0.35 + Math.random() * 0.5, vowel: vowel });
+}
+
+function catchLt(el, vowel, ch){
+  el.classList.add('caught');
+  el.style.pointerEvents = 'none';
+  if (vowel){
+    caught++; praise();
+    document.getElementById('lblScore').textContent = 'Поймано: ' + caught + ' / ' + STAGES[stage].need;
+    if (caught >= STAGES[stage].need) endStage();
+  } else {
+    oops();
+  }
+  setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 350);
+}
+
+function endStage(){
+  running = false;
+  cancelAnimationFrame(anim);
+  letters = [];
+  document.getElementById('field').innerHTML = '';
+  if (stage < 2){
+    stage++;
+    document.getElementById('etapTitle').textContent = 'Этап ' + stage + ' пройден!';
+    document.getElementById('etapSub').textContent = stage === 1 ? 'Теперь буквы будут одного цвета — думай сам!' : 'А теперь самое быстрое!';
+    show('s3');
+    if (stage === 1) sfx('v11'); else sfx('v12');
+  } else {
+    document.getElementById('bAgain').style.display = 'none';
+    show('s4');
+    setTimeout(function(){ sfx('v14'); }, 800);
+  }
+}
+
+/* ===== кнопки ===== */
+document.getElementById('bGo').addEventListener('pointerdown', function(){ show('s1'); sfx('v01'); });
+document.getElementById('bStart').addEventListener('pointerdown', function(){ startStage(); });
+document.getElementById('bNext').addEventListener('pointerdown', function(){ startStage(); });
+document.getElementById('bWatch').addEventListener('pointerdown', function(){
+  stopAll(); var v = document.getElementById('vidStar');
+  try { v.currentTime = 0; v.play().catch(function(){}); } catch(e) {}
+});
+document.getElementById('bAgain').addEventListener('pointerdown', function(){
+  stage = 0; caught = 0; missed = 0; stopAll(); startStage();
+});
+/* рестарт по первому экрану */
+show('s0');
+</script>
+</body>
+</html>
